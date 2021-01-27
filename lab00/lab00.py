@@ -1,5 +1,6 @@
 # Change this function
 def my_palindrome():
+    print('level')
     return ''
 
 # Do not change the main method
