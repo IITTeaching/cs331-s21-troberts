@@ -28,17 +28,40 @@ ROMEO_SOLILOQUY = """
         O, that I were a glove upon that hand,
         that I might touch that cheek!"""
 
+
 ################################################################################
 # EXERCISE 1
 ################################################################################
 # Implement this function
 def compute_ngrams(toks, n=2):
-    """Returns an n-gram dictionary based on the provided list of tokens."""
-    pass
+    if type(toks) == str:
+        tokens = [t.lower() for t in toks.split()]
+    else:
+        tokens = toks
+    ngramtples = []
+    for x in range(len(tokens)-n+1):
+        w = tokens[x:x + n]
+        ngramtples.append(tuple(w))
+    ngramdict = {"initial": "dict"}
+    ngramdict.pop("initial")
+    for i in ngramtples:
+        empty = []
+        y = list(i)
+        y.pop(0)
+        if i[0] not in ngramdict.keys():
+            empty.append(tuple(y))
+            ngramdict[i[0]] = empty
+        else:
+            a = ngramdict[i[0]]
+            a.append(tuple(y))
+            ngramdict[i[0]] = a
+    return ngramdict
+
 
 def test1():
     test1_1()
     test1_2()
+
 
 # 20 Points
 def test1_1():
@@ -64,6 +87,7 @@ def test1_1():
                     ('is', 'my', 'love!'),
                     ('were', 'not', 'night.')])
 
+
 # 30 Points
 def test1_2():
     """Test your code on Peter Pan."""
@@ -88,12 +112,23 @@ def test1_2():
     tc.assertEqual(len(dct['wendy']), 202)
     tc.assertEqual(len(dct['peter']), 243)
 
+
 ################################################################################
 # EXERCISE 2
 ################################################################################
 # Implement this function
 def gen_passage(ngram_dict, length=100):
-    pass
+    psge = ''
+    while len(psge.split()) < length:
+        starter = random.choice(sorted(ngram_dict.keys()))
+        psge += (' ' + starter)
+        psge += (' ' + ' '.join(random.choice(ngram_dict[starter])))
+        while psge.split()[-1] in ngram_dict.keys():
+            psge += (' ' + ' '.join(random.choice(ngram_dict[psge.split()[-1]])))
+    lWords = psge.split()
+    lWords = lWords[:length]
+    psge = ' '.join(lWords)
+    return psge
 
 # 50 Points
 def test2():
@@ -109,9 +144,11 @@ def test2():
     tc.assertEqual(gen_passage(compute_ngrams(romeo_toks), 10),
                    'too bold, \'tis not night. see, how she leans her')
 
+
 def main():
     test1()
     test2()
+
 
 if __name__ == '__main__':
     main()
