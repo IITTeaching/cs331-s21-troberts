@@ -51,6 +51,24 @@ def check_delimiters(expr):
     delim_closers = '})]>'
 
     ### BEGIN SOLUTION
+
+    s = Stack()
+    st = expr
+
+    for i in st:
+        if i in delim_openers:
+            s.push(i)
+        elif i in delim_closers:
+            if s.empty():
+                return False
+            elif delim_closers.index(i) == delim_openers.index(s.peek()):
+                s.pop()
+            else:
+                return False
+    if s.empty():
+        return True
+    else:
+        return False
     ### END SOLUTION
 
 ################################################################################
@@ -121,8 +139,47 @@ def infix_to_postfix(expr):
     postfix = []
     toks = expr.split()
     ### BEGIN SOLUTION
-    ### END SOLUTION
+    prec = {'*': 2, '/': 2, '+': 1, '-': 1}
+    ops = Stack()
+    postfix = []
+    toks = expr.split()
+    ### BEGIN SOLUTION
+
+    for i in toks:
+        if i.isdigit():
+            postfix.append(i)
+        elif ops.empty() or ops.peek() == '(':
+            ops.push(i)
+        elif i in prec:
+            while True:
+                if ops.empty():
+                    ops.push(i)
+                    break
+                elif prec[i] > prec[ops.peek()]:
+                    ops.push(i)
+                    break
+                elif prec[i] == prec[ops.peek()]:
+                    postfix.append(ops.pop())
+                    ops.push(i)
+                    break
+                else:
+                    postfix.append(ops.pop())
+
+        elif i == '(':
+            ops.push(i)
+
+        elif i == ')':
+            j = ops.peek()
+            while j != '(':
+                postfix.append(ops.pop())
+                j = ops.peek()
+            ops.pop()
+        
+    while not ops.empty():
+        postfix.append(ops.pop())
+       
     return ' '.join(postfix)
+    ### END SOLUTION
 
 ################################################################################
 # INFIX -> POSTFIX CONVERSION - TEST CASES
@@ -166,19 +223,51 @@ class Queue:
 
     def enqueue(self, val):
         ### BEGIN SOLUTION
+
+        if self.data[-1] != None:
+            raise RuntimeError
+        else:
+            if self.data[0] == None: 
+                self.head = self.tail = val
+                del self.data[-1]
+                self.data.insert(0,val)
+            else:
+                self.tail = val
+                del self.data[-1]
+                k = len(self.data)-1
+                while k > 0:
+                    if self.data[k] != None:
+                        break
+                    else:
+                    	k -= 1
+                self.data.insert(k+1,val)
+
         ### END SOLUTION
 
     def dequeue(self):
         ### BEGIN SOLUTION
+        if self.data[0] != None:
+            a = self.head
+            del self.data[0]
+            self.data.insert(len(self.data),None)
+            self.head = self.data[0]
+            if self.data[0] == None: 
+                self.head = -1
+            return a
+        else:
+            raise RuntimeError
         ### END SOLUTION
 
     def resize(self, newsize):
         assert(len(self.data) < newsize)
         ### BEGIN SOLUTION
+        while len(self.data) < newsize:
+            self.data.insert(len(self.data),None)
         ### END SOLUTION
 
     def empty(self):
         ### BEGIN SOLUTION
+        return [None]*len(self.data) == self.data
         ### END SOLUTION
 
     def __bool__(self):
@@ -194,6 +283,8 @@ class Queue:
 
     def __iter__(self):
         ### BEGIN SOLUTION
+        for i in range(len(self.data)):
+            yield self.data[i]
         ### END SOLUTION
 
 ################################################################################
@@ -213,8 +304,10 @@ def test_queue_implementation_1():
     with tc.assertRaises(RuntimeError):
         q.enqueue(5)
 
+    
     for i in range(5):
         tc.assertEqual(q.dequeue(), i)
+
 
     tc.assertTrue(q.empty())
 
